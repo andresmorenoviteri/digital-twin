@@ -1,0 +1,51 @@
+# Here you can define all your datasets by using simple YAML syntax.
+#
+# Documentation for this file format can be found in "The Data Catalog"
+# Link: https://docs.kedro.org/en/stable/catalog-data/introduction/#data-catalog
+
+chart_data:
+  type: partitions.PartitionedDataset
+  path: data/01_raw/chart_data
+  filename_suffix: .txt
+  load_args:
+    encoding: utf-16
+  dataset: pandas.CSVDataset
+
+experiment_data:
+  type: pandas.ExcelDataset
+  filepath: data/01_raw/injection_molding_experiments_switched.xlsx
+
+
+preprocessed_chart_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/preprocessed_chart_data.pq
+                                 
+preprocessed_experiment_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/preprocessed_experiment_data.pq
+
+
+phase_features_train:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/phase_features_train.pq
+
+phase_features_test:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/phase_features_test.pq
+
+
+X_train_scaled:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/X_train_scaled.pq
+
+X_test_scaled:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/X_test_scaled.pq
+
+y_train:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/y_train.pq
+
+y_test:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/y_test.pq
