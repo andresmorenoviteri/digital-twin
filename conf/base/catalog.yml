@@ -13,11 +13,7 @@ chart_data:
 
 experiment_data: 
   type: pandas.ExcelDataset
-  filepath: data/01_raw/injection_molding_experiments.xlsx
-
-reconstruction_data: 
-  type: pandas.ExcelDataset
-  filepath: data/01_raw/recons_data.xlsx
+  filepath: data\01_raw\injection_molding_experiments.xlsx
 
 preprocessed_chart_data:
   type: pandas.ParquetDataset
