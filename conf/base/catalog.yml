@@ -11,9 +11,21 @@ chart_data:
     encoding: utf-16
   dataset: pandas.CSVDataset
 
+testing_chart_data:
+  type: partitions.PartitionedDataset
+  path: data/01_raw/chart_dataMohamed
+  filename_suffix: .txt
+  load_args:
+    encoding: utf-16
+  dataset: pandas.CSVDataset
+
 experiment_data: 
   type: pandas.ExcelDataset
   filepath: data\01_raw\injection_molding_experiments.xlsx
+
+testing_exp_data:
+ type: pandas.ExcelDataset
+ filepath: data\01_raw\injection_molding_experiments_mohamed.xlsx
 
 preprocessed_chart_data:
   type: pandas.ParquetDataset
