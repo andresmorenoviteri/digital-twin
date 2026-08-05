@@ -3,6 +3,7 @@
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/catalog-data/introduction/#data-catalog
 
+# RAW FILES
 chart_data:
   type: partitions.PartitionedDataset
   path: data/01_raw/chart_data
@@ -27,6 +28,18 @@ testing_exp_data:
  type: pandas.ExcelDataset
  filepath: data\01_raw\injection_molding_experiments_mohamed.xlsx
 
+chart_data_updated:
+ type: pandas.ExcelDataset
+ filepath: data\01_raw\chart_data_new\combined_measurements.xlsx
+ load_args:
+  sheet_name: "Data"
+
+input_data_updated:
+ type: pandas.ExcelDataset
+ filepath: data\01_raw\chart_data_new\injection_molding_experiments.xlsx
+
+
+# FIRST PROCESSED FILES
 preprocessed_chart_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/preprocessed_chart_data.pq
