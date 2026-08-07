@@ -10,8 +10,9 @@ from scipy.signal import find_peaks
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from tsfresh import extract_features, select_features
-from tsfresh.utilities.dataframe_functions import impute
-
+from tsfresh.utilities.dataframe_functions import get_range_values_per_column, impute_dataframe_range
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, f_classif
 
 def split_by_experiment_id(chart_df: pd.DataFrame, experiment_df: pd.DataFrame, parameters: Dict
                            ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -130,7 +131,7 @@ def transform_time_series_into_phases(df: pd.DataFrame) -> pd.DataFrame:
         inj_df = features_only[df_id["time"] <= t_inj].add_suffix("_inj")
         hold_df = features_only[(df_id["time"] > t_inj) & (df_id["time"] <= t_hold)].add_suffix("_hold")
         dose_df = features_only[(df_id["time"] > t_hold) & (df_id["time"] <= t_dose)].add_suffix("_dosage")
-        decomp_df = features_only[(df_id["time"] > t_dose) & (df_id["time"] <= t_decomp)].add_suffix("_comp")
+        decomp_df = features_only[(df_id["time"] > t_dose) & (df_id["time"] <= t_decomp)].add_suffix("_decomp")
 
         # Horizontally merge phases. Missing rows in shorter phases auto-fill with NaN
         dfs_to_concat = [inj_df, hold_df, dose_df, decomp_df]
@@ -201,8 +202,11 @@ def scale_and_align_features(train_static: pd.DataFrame,
 
     # 3. Safe imputation: Automatic handling of nested inf, -inf, and NaN math values
     # (Modifies the datafrmaes in-place)
-    impute(X_train)
-    impute(X_test_raw)
+    col_to_max, col_to_min, col_to_median = get_range_values_per_column(X_train)
+    impute_dataframe_range(X_train, col_to_max, col_to_min, col_to_median)
+    impute_dataframe_range(X_test_raw, col_to_max, col_to_min, col_to_median)
+    # impute(X_train)
+    # impute(X_test_raw)
 
     # 4. Target Label Encoding
     l_encoder = LabelEncoder()
@@ -227,4 +231,60 @@ def scale_and_align_features(train_static: pd.DataFrame,
     y_train_df = y_train_enc.to_frame(name=target_col)
     y_test_df = y_test_enc.to_frame(name=target_col)
 
-    return X_train_scaled, X_test_scaled, y_train_df, y_test_df
+    return X_train_scaled, X_test_scaled, y_train_df, y_test_df, scaler, col_to_max, col_to_min, col_to_median, X_train_selected.columns, X_train, X_test_raw
+
+
+def drop_correlated_features(X: pd.DataFrame, parameters: Dict) -> pd.DataFrame:
+    """Drop one feature from each pair of features correlated above the configured threshold."""
+    threshold = parameters["correlation_threshold"]
+
+    corr_matrix = X.corr().abs()
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
+
+    X_reduced = X.drop(columns=to_drop)
+    print(f"Reduced features from {X.shape[1]} to {X_reduced.shape[1]} "
+          f"(dropped {len(to_drop)} correlated features)")
+    return X_reduced
+
+
+def select_top_features_by_importance(X: pd.DataFrame, y: pd.DataFrame, parameters: Dict) -> pd.DataFrame:
+    """Train a quick RandomForest and keep only the top N features by importance."""
+    target_col = parameters["target_column"]
+    n_top = parameters["n_top_features"]
+    random_state = parameters["random_state"]
+
+    model = RandomForestClassifier(n_estimators=100, random_state=random_state)
+    model.fit(X, y[target_col])
+
+    importances = pd.Series(model.feature_importances_, index=X.columns)
+    top_features = importances.sort_values(ascending=False).index[:n_top]
+
+    X_final = X[top_features]
+    print(f"Final matrix shape: {X_final.shape}")
+    return X_final
+
+
+def rank_features_by_anova(X: pd.DataFrame, y: pd.DataFrame, parameters: Dict) -> pd.DataFrame:
+    """Rank features by ANOVA F-score against the target, descending."""
+    target_col = parameters["target_column"]
+
+    selector = SelectKBest(score_func=f_classif, k="all")
+    selector.fit(X, y[target_col])
+
+    scores_df = pd.DataFrame({
+        "Features": X.columns,
+        "F_Score": selector.scores_
+    }).sort_values(by="F_Score", ascending=False)
+
+    return scores_df
+
+
+def align_train_test_features(X_train_final: pd.DataFrame,
+                              X_test_scaled: pd.DataFrame,
+                              scores_df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Slice train and test sets down to the same final feature list, ordered by F-score."""
+    features_to_use = scores_df["Features"].to_list()
+    x_train = X_train_final[features_to_use]
+    x_test = X_test_scaled[x_train.columns]
+    return x_train, x_test

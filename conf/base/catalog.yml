@@ -22,27 +22,37 @@ testing_chart_data:
 
 experiment_data: 
   type: pandas.ExcelDataset
-  filepath: data\01_raw\injection_molding_experiments.xlsx
+  filepath: data/01_raw/injection_molding_experiments.xlsx
 
 testing_exp_data:
  type: pandas.ExcelDataset
- filepath: data\01_raw\injection_molding_experiments_mohamed.xlsx
+ filepath: data/01_raw/injection_molding_experiments_mohamed.xlsx
 
 chart_data_updated:
  type: pandas.ExcelDataset
- filepath: data\01_raw\chart_data_new\combined_measurements.xlsx
+ filepath: data/01_raw/chart_data_new/combined_measurements.xlsx
  load_args:
   sheet_name: "Data"
 
 input_data_updated:
  type: pandas.ExcelDataset
- filepath: data\01_raw\chart_data_new\injection_molding_experiments.xlsx
+ filepath: data/01_raw/chart_data_new/injection_molding_experiments.xlsx
 
 
 # FIRST PROCESSED FILES
 preprocessed_chart_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/preprocessed_chart_data.pq
+
+# save the new preprocessed cahrt data new as well
+preprocessed_chart_data_new:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/preprocessed_chart_data_new.pq
+
+# save the concated_dated separately to check
+concatenated_chart_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/concatenated_chart_data.pq
                                  
 preprocessed_experiment_data:
   type: pandas.ParquetDataset
@@ -66,10 +76,34 @@ X_test_scaled:
   type: pandas.ParquetDataset
   filepath: data/04_feature/X_test_scaled.pq
 
+
+# feature selection: correlation drop -> importance -> ANOVA ranking
+X_train_features_reduced:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/X_train_features_reduced.pq
+
+X_train_final:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/X_train_final.pq
+
+feature_scores:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/feature_scores.pq
+
+
+# FINAL MODEL INPUT
+x_train:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/x_train.pq
+
+x_test:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/x_test.pq
+
 y_train:
   type: pandas.ParquetDataset
-  filepath: data/04_feature/y_train.pq
+  filepath: data/05_model_input/y_train.pq
 
 y_test:
   type: pandas.ParquetDataset
-  filepath: data/04_feature/y_test.pq
+  filepath: data/05_model_input/y_test.pq

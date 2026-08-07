@@ -86,11 +86,40 @@ def preprocess_and_merge_charts(partitioned_input: Dict[str, Any]) -> pd.DataFra
     chart_data = pd.concat(all_dfs, ignore_index=True)
     chart_data = chart_data.apply(pd.to_numeric, errors="coerce")
     chart_data = chart_data.sort_values(by=["id", "time"]).reset_index(drop=True)
+    cols = ['id'] + [col for col in chart_data.columns if col != 'id']
+    chart_data = chart_data[cols]
 
-    return chart_data
+    return chart_data, cols
 
 
 # Get only relevant data with labels from experiment_data
 def preprocess_experiment_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean the raw injection molding experiment data"""
+    columns_to_use = ['id', 'T_melt', 't_holdingpressure', 'Reskühlzeit_t_cooling',
+       'p_holdingpressure', 'V_injection', 'T_cooling', 'Zeit', 'Quality']
+    df = df[columns_to_use]
+    df = df.drop(columns=['V_injection'])
+    df = df[df['id'] != 594]
     return df.dropna(subset=["Quality"])
+
+
+# Get other data from updated chart data from the excel file
+def preprocess_charts_excel(df: pd.DataFrame, cols: list):
+    """Cleans the raw chart data from the second files"""
+    df = df.rename(columns={'ID': 'id'})
+    df = df[df['id'] > 120]
+    df['id'] = df['id'] + 165
+    df = df.drop(columns=['Timestamp', 'Time'])
+    df.columns = cols
+
+    return df
+
+# concatenate the two chart dataframes and remove undesired columns
+def concat_chart(df1: pd.DataFrame, df2: pd.DataFrame):
+    df = pd.concat([df1, df2], ignore_index=True)
+    # Drop columns that don't contribute valuable information
+    df = df.drop(columns=['Auswerferweg, Ist', 'Werkzeuggeschwindigkeit, Ist', 'Auswerfergeschwindigkeit, Ist', 'Werkzeugweg, Ist'])
+    # remove data from id=594, it has missing columns
+    df = df[df['id'] != 594]
+
+    return df
