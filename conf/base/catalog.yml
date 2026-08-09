@@ -107,3 +107,14 @@ y_train:
 y_test:
   type: pandas.ParquetDataset
   filepath: data/05_model_input/y_test.pq
+
+
+# MODEL
+svm_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/svm_model.pkl
+
+# METRICS
+svm_model_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/svm_model_metrics.json
