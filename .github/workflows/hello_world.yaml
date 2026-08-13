@@ -4,4 +4,4 @@ jobs: # main part of workflow file
   say_hello: # job to do, name of job
     runs-on: ubuntu-latest # github hosted virtual machine that executes job
     steps: # main part of a job, actions that need to be performed during workflow 
-      - run: echo "Hello, World!" # dash at beginning tells yaml its a list
+      - run: echo "we are printing this!" # dash at beginning tells yaml its a list
