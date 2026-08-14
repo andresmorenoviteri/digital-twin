@@ -13,6 +13,7 @@ from tsfresh import extract_features, select_features
 from tsfresh.utilities.dataframe_functions import get_range_values_per_column, impute_dataframe_range
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, f_classif
+from tsfresh.feature_extraction.settings import from_columns
 
 def split_by_experiment_id(chart_df: pd.DataFrame, experiment_df: pd.DataFrame, parameters: Dict
                            ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -150,26 +151,26 @@ def transform_time_series_into_phases(df: pd.DataFrame) -> pd.DataFrame:
 
 
 
-def extract_tsfresh_features(phase_df: pd.DataFrame) -> pd.DataFrame:
+def extract_tsfresh_features(phase_df: pd.DataFrame, kind_to_fc_parameters: dict = None) -> pd.DataFrame:
     """Melts the sparse phase dataframe to drop NaNs and extracts tsfresh features.
     
-    This function implements long-format compression to speed up te engine significantly.
+    This function implements long-format compression to speed up the engine significantly.
+    If kind_to_fc_parameters is provided, only those exact features are computed
+    (used at inference time to match training feature set).
     """
     if phase_df.empty:
         return pd.DataFrame()
     
-    # 1. Transform the wide table into a long one 
     long_df = phase_df.melt(id_vars=['id', 'time_stamp'], var_name='kind', value_name='value')
-
-    # 2. Drop the rows with NaNs safely
     long_df = long_df.dropna(subset=['value'])
 
-    # 3. Extract features utilizing the compressed long structure
-    extracted_features = extract_features(long_df,
-                                          column_id='id',
-                                          column_sort='time_stamp',
-                                          column_kind='kind',
-                                          column_value='value'
+    extracted_features = extract_features(
+        long_df,
+        column_id='id',
+        column_sort='time_stamp',
+        column_kind='kind',
+        column_value='value',
+        kind_to_fc_parameters=kind_to_fc_parameters
     )
     
     return extracted_features
@@ -287,6 +288,12 @@ def align_train_test_features(X_train_final: pd.DataFrame,
     features_to_use = scores_df["Features"].to_list()
     x_train = X_train_final[features_to_use]
     x_test = X_test_scaled[x_train.columns]
+
     return x_train, x_test
 
+
+def get_tsfresh_settings(tsfresh_features: pd.DataFrame) -> dict:
+    """Derives the exact tsfresh feature-extraction settings used in training,
+    so inference can reproduce the identical feature set."""
+    return from_columns(tsfresh_features.columns)
 

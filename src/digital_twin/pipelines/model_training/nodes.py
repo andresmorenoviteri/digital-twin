@@ -21,7 +21,7 @@ def train_svm_model(x_train: pd.DataFrame, y_train: pd.DataFrame, parameters: Di
     Args:
         x_train: Final training feature matrix.
         y_train: Training labels (single-column DataFrame).
-        parameters: Pipeline armaeters containing SVM hyperparameters
+        parameters: Pipeline parameters containing SVM hyperparameters
 
     Returns:
         Fitted SVC model.
@@ -65,3 +65,15 @@ def evaluate_model(model: SVC, x_test: pd.DataFrame, y_test: pd.DataFrame) -> Di
 
     print(classification_report(y_true, y_pred))
     return metrics
+
+def package_production_artifacts(model, scaler, feature_columns, x_train, col_to_max, col_to_min, col_to_median, kind_to_fc_parameters) -> dict:
+    return {
+        "model": model,
+        "scaler": scaler,
+        "feature_columns": feature_columns,
+        "x_train_columns": list(x_train.columns),
+        "col_to_max": col_to_max,
+        "col_to_min": col_to_min,
+        "col_to_median": col_to_median,
+        "kind_to_fc_parameters": kind_to_fc_parameters,
+    }

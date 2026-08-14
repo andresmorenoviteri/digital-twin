@@ -13,7 +13,9 @@ from .nodes import (split_by_experiment_id,
                     drop_correlated_features,
                     select_top_features_by_importance,
                     rank_features_by_anova,
-                    align_train_test_features)
+                    align_train_test_features,
+                    get_tsfresh_settings
+                    )
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
@@ -100,6 +102,12 @@ def create_pipeline(**kwargs) -> Pipeline:
             inputs=["X_train_final", "X_test_scaled", "feature_scores"],
             outputs=["x_train", "x_test"],
             name="align_train_test_features_node"
+        ),
+        node(
+            func=get_tsfresh_settings,
+            inputs="extracted_features_train",
+            outputs="kind_to_fc_parameters",
+            name="get_tsfresh_settings_node"
         )
     ]
 )

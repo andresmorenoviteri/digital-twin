@@ -123,3 +123,54 @@ def concat_chart(df1: pd.DataFrame, df2: pd.DataFrame):
     df = df[df['id'] != 594]
 
     return df
+
+
+def _load_and_merge_groups_from_paths(file_paths: List[str]) -> pd.DataFrame:
+    print("Received file paths:", file_paths)
+    df_list = []
+    for path in sorted(file_paths):
+        print(f"Reading: {path}")
+        try:
+            df = pd.read_csv(
+                path,
+                sep=";",
+                skiprows=11,
+                encoding="utf-16",
+                engine="python",
+                on_bad_lines="skip"
+            )
+            if df.empty:
+                continue
+
+            # Clean trailing columns and whitespaces
+            df = df.iloc[:, :-1]
+            df.columns = df.columns.str.strip()
+            df_list.append(df)
+        except Exception:
+            continue
+
+    if not df_list:
+        return pd.DataFrame()
+
+    # Outer merge all dataframes within this specific group
+    return reduce(
+        lambda left, right: pd.merge(left, right, on="time", how="outer"), df_list
+    )    
+
+def process_single_chart_group(df: pd.DataFrame, experiment_id: int = 1) -> tuple[pd.DataFrame, list]:
+    """Same as preprocess_and_merge_charts but for a single pre-merged group (e.g. one API upload)."""
+
+    if df.empty:
+        return pd.DataFrame(), []
+
+    cleaned_df = df[df["time"] != "-start data-"].dropna(subset=["time"])
+    temp_df = cleaned_df.copy()
+    temp_df["id"] = experiment_id
+
+    chart_data = temp_df.apply(pd.to_numeric, errors="coerce")
+    chart_data = chart_data.sort_values(by=["id", "time"]).reset_index(drop=True)
+
+    cols = ['id'] + [col for col in chart_data.columns if col != 'id']
+    chart_data = chart_data[cols]
+
+    return chart_data, cols

@@ -114,7 +114,19 @@ svm_model:
   type: pickle.PickleDataset
   filepath: data/06_models/svm_model.pkl
 
+# ALL PARAMETERS NEEDED FOR APP
+production_artifacts:
+  type: pickle.PickleDataset
+  filepath: data/06_models/production_artifacts.pkl
+  backend: joblib
+
+# kind parameter
+kind_to_fc_parameters:
+  type: pickle.PickleDataset
+  filepath: data/06_models/kind_to_fc_parameters.pkl
+
 # METRICS
 svm_model_metrics:
   type: json.JSONDataset
   filepath: data/08_reporting/svm_model_metrics.json
+
