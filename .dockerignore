@@ -1,0 +1,21 @@
+# Data (large, not needed at runtime except final model artifacts)
+data/01_raw/*
+data/02_intermediate/*
+data/03_primary/*
+data/04_feature/*
+data/05_model_input/*
+data/07_model_output/*
+data/08_reporting/*
+
+# Notebooks, envs, caches
+notebooks/
+.venv/
+python_3116_venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+
+# Kedro-specific
+.ipynb_checkpoints/
+logs/

@@ -170,7 +170,8 @@ def extract_tsfresh_features(phase_df: pd.DataFrame, kind_to_fc_parameters: dict
         column_sort='time_stamp',
         column_kind='kind',
         column_value='value',
-        kind_to_fc_parameters=kind_to_fc_parameters
+        kind_to_fc_parameters=kind_to_fc_parameters,
+        n_jobs=0
     )
     
     return extracted_features

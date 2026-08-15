@@ -90,4 +90,3 @@ async def predict(
         "prediction": int(prediction[0]),
         "label": "Good" if prediction[0] == 0 else "Faulty"
     }
-
