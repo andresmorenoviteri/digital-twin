@@ -37,13 +37,15 @@ DROPS_COLUMNS = ["Auswerferweg, Ist", "Werkzeuggeschwindigkeit, Ist",
 
 @app.post("/predict")
 async def predict(
-    chart_files: List[UploadFile] = File(...), # the 3 chart .txt files
+    chart_file_1: UploadFile = File(...), # the 3 chart .txt files
+    chart_file_2: UploadFile = File(...),
+    chart_file_3: UploadFile = File(...),
     exp_file: UploadFile = File(...) # the excel file
 ):
     with tempfile.TemporaryDirectory() as tmpdir:
         #save uploaded chart files to a temp folder
         chart_paths = []
-        for f in chart_files:
+        for f in [chart_file_1, chart_file_2, chart_file_3]:
             path = os.path.join(tmpdir, f.filename)
             with open(path, "wb") as buf:
                 shutil.copyfileobj(f.file, buf)
