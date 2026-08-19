@@ -15,6 +15,11 @@ data/**
 # except their sub-folders
 !data/**/
 
+# but allow the production model artifacts
+!data/06_models/production_artifacts.pkl
+!data/06_models/svm_model.pkl
+!data/06_models/kind_to_fc_parameters.pkl
+
 # also keep all .gitkeep files
 !.gitkeep
 
